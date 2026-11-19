@@ -3331,6 +3331,21 @@ class MusicService :
         }
     }
 
+    private fun isYouTubeBotCheckError(error: PlaybackException): Boolean {
+        val messages = generateSequence<Throwable>(error) { it.cause }
+            .mapNotNull { it.message }
+            .joinToString(" ")
+            .lowercase()
+        return listOf(
+            "bot check",
+            "bot-check",
+            "botcheck",
+            "botguard",
+            "confirm you're not a bot",
+            "verify you're not a bot",
+        ).any(messages::contains)
+    }
+
     private fun isNetworkRelatedError(error: PlaybackException): Boolean {
 
         if (isExpiredUrlError(error) || isRangeNotSatisfiableError(error) || isPageReloadError(error)) {
@@ -3389,6 +3404,25 @@ class MusicService :
         }
 
         lastPlaybackError = error
+
+        // YouTube may reject stream resolution with a network bot-check. Treating that
+        // response as an ordinary song failure makes failStream() skip repeatedly through
+        // the queue, even though every following track is likely to hit the same check.
+        // Keep the current item selected and paused so the user can retry after the
+        // network-side restriction clears.
+        if (isYouTubeBotCheckError(error)) {
+            Timber.tag(TAG).w("YouTube network bot-check detected; pausing without skipping the queue")
+            clearStreamFailure()
+            failureJob?.cancel()
+            failureJob = null
+            retryJob?.cancel()
+            waitingForNetworkConnection.value = false
+            player.pause()
+            com.mochyy.mochymusic.ui.component.TopToaster.error(
+                "YouTube is asking for a network check. Wait a few minutes or switch Wi-Fi/mobile data, then press Play to retry."
+            )
+            return
+        }
         // every provider that's on was already asked: retrying would only ask them all again, so
         // straight on with the reason. Without a connection it waits for one like any other song.
         if (isNetworkConnected.value &&
