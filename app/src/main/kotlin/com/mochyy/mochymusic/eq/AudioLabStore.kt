@@ -83,9 +83,9 @@ data class EqSettings(
 
 @Serializable
 data class LoudnessSettings(
-    val enabled: Boolean = false,
-    val boostDb: Float = 4f,
-    val compression: Float = 0.3f,
+    val enabled: Boolean = true,
+    val boostDb: Float = 5.5f,
+    val compression: Float = 0.4f,
 ) {
     fun toParams() = LoudnessParams(enabled, boostDb, compression)
 }
@@ -433,7 +433,7 @@ object EqPresets {
         Preset("spoken", "Spoken Word", doubleArrayOf(-3.5, -0.5, 0.0, 0.5, 3.5, 4.5, 5.0, 4.0, 2.5, 0.0)),
         Preset("treble_boost", "Treble Booster", doubleArrayOf(0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 2.5, 3.5, 4.5, 5.5)),
         Preset("treble_cut", "Treble Reducer", doubleArrayOf(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -2.5, -3.5, -4.5, -5.5)),
-        Preset("punchy_balanced", "Mochy Punch", doubleArrayOf(4.0, 5.0, 4.0, 2.0, 0.0, 0.0, 1.0, 2.0, 2.0, 1.0)),
+        Preset("punchy_balanced", "Mochy Punch", doubleArrayOf(5.0, 6.5, 5.0, 2.5, 0.0, 0.0, 1.0, 2.0, 2.0, 1.0)),
         Preset("vocal", "Vocal Booster", doubleArrayOf(-1.5, -3.0, -3.0, 1.5, 3.5, 3.5, 3.0, 1.5, 0.0, -1.5)),
     )
 }
