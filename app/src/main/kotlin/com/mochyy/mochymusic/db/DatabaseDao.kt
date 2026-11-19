@@ -41,6 +41,7 @@ import com.mochyy.mochymusic.db.entities.ImportedPlaylist
 import com.mochyy.mochymusic.db.entities.ImportedPlaylistTrack
 import com.mochyy.mochymusic.db.entities.ImportedSong
 import com.mochyy.mochymusic.db.entities.ImportedAlbumRow
+import com.mochyy.mochymusic.db.entities.ImportedLike
 import com.mochyy.mochymusic.db.entities.ImportedSourceCount
 import com.mochyy.mochymusic.db.entities.PlaylistEvent
 import com.mochyy.mochymusic.db.entities.PlaylistSong
@@ -702,6 +703,10 @@ interface DatabaseDao {
     @Query("SELECT * FROM song WHERE id IN (:songIds)")
     suspend fun getSongsByIds(songIds: List<String>): List<Song>
 
+    // just the rows, no artists or album, for checking thousands of likes at once
+    @Query("SELECT * FROM song WHERE id IN (:songIds) AND NOT liked")
+    fun unlikedSongEntities(songIds: List<String>): List<SongEntity>
+
     /** [getSongsByIds] that keeps up: a like or a new artist picture shows without asking again. */
     @Transaction
     @Query("SELECT * FROM song WHERE id IN (:songIds)")
@@ -1137,6 +1142,18 @@ interface DatabaseDao {
     @Transaction
     @Query("SELECT * FROM song WHERE isLocal AND albumId IS NULL AND albumName IS NOT NULL AND albumName != ''")
     suspend fun localSongsWithoutAlbum(): List<Song>
+
+    // local files whose genre tag hasn't been read yet
+    @Query("SELECT * FROM song WHERE isLocal AND genre IS NULL AND localUri IS NOT NULL")
+    suspend fun localSongsWithoutGenre(): List<SongEntity>
+
+    @Query("UPDATE song SET genre = :genre WHERE id = :songId")
+    fun setSongGenre(songId: String, genre: String)
+
+    // the local songs that have a genre, for the Genres tab and each genre's page
+    @Transaction
+    @Query("SELECT * FROM song WHERE isLocal AND genre IS NOT NULL AND genre != '' ORDER BY title COLLATE NOCASE")
+    fun localSongsWithGenre(): Flow<List<Song>>
 
     @Transaction
     @Query("SELECT *, (SELECT COUNT(*) FROM playlist_song_map WHERE playlistId = playlist.id) AS songCount FROM playlist WHERE bookmarkedAt IS NOT NULL ORDER BY rowId")
@@ -1798,6 +1815,13 @@ interface DatabaseDao {
     @Query("UPDATE import_session_song SET liked = 1 WHERE sessionId = :sessionId AND songId = :songId")
     fun markLikedByImport(sessionId: Long, songId: String)
 
+    @Query(
+        "SELECT import_session_song.songId AS songId, MAX(import_session.startedAt) AS importedAt FROM import_session_song " +
+            "JOIN import_session ON import_session.id = import_session_song.sessionId " +
+            "WHERE import_session_song.liked GROUP BY import_session_song.songId"
+    )
+    fun likesFromImports(): List<ImportedLike>
+
     @Query("SELECT * FROM import_session WHERE source = :source ORDER BY id DESC")
     fun importSessions(source: String): List<ImportSession>
 
@@ -1869,12 +1893,22 @@ interface DatabaseDao {
     @Query("SELECT * FROM imported_playlist WHERE source = :source AND remoteId = :remoteId ORDER BY importedAt DESC LIMIT 1")
     fun importedPlaylistByRemoteId(source: String, remoteId: String): ImportedPlaylist?
 
-    /** Remembers where the playlist lives (an unknown id or link keeps the one already saved). */
+    /** remembers where the playlist lives and who made it, anything unknown keeps what's already saved */
     @Query(
         "UPDATE imported_playlist SET remoteId = COALESCE(:remoteId, remoteId), " +
-            "remoteUrl = COALESCE(:remoteUrl, remoteUrl), lastSyncedAt = :syncedAt WHERE playlistId = :playlistId"
+            "remoteUrl = COALESCE(:remoteUrl, remoteUrl), lastSyncedAt = :syncedAt, " +
+            "authorName = COALESCE(:authorName, authorName), authorAvatarUrl = COALESCE(:authorAvatarUrl, authorAvatarUrl), " +
+            "authorUrl = COALESCE(:authorUrl, authorUrl) WHERE playlistId = :playlistId"
     )
-    fun updateImportedPlaylistOrigin(playlistId: String, remoteId: String?, remoteUrl: String?, syncedAt: LocalDateTime)
+    fun updateImportedPlaylistOrigin(
+        playlistId: String,
+        remoteId: String?,
+        remoteUrl: String?,
+        syncedAt: LocalDateTime,
+        authorName: String?,
+        authorAvatarUrl: String?,
+        authorUrl: String?,
+    )
 
     @Query("SELECT trackKey FROM imported_playlist_track WHERE playlistId = :playlistId")
     fun importedPlaylistTrackKeys(playlistId: String): List<String>
