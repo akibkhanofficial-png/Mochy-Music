@@ -288,6 +288,8 @@ import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 private const val INSTANT_SILENCE_SKIP_STEP_MS = 15_000L
+// Do not seek through a track's final 20 seconds; this avoids cutting off quiet outros.
+private const val INSTANT_SILENCE_SKIP_END_GUARD_MS = 20_000L
 
 /** A saved volume below this is taken as one saved while muted or mid-fade, not the user's own. */
 private const val MinRestoredVolume = 0.02f
@@ -3758,7 +3760,9 @@ class MusicService :
 
     private suspend fun performInstantSilenceSkip() {
         val duration = player.duration.takeIf { it != C.TIME_UNSET && it > 0 } ?: return
-        if (duration <= INSTANT_SILENCE_SKIP_STEP_MS) return
+        // Keep the final 20 seconds intact: long silent outros must not make the next song start early.
+        val lastSkippablePosition = duration - INSTANT_SILENCE_SKIP_END_GUARD_MS
+        if (lastSkippablePosition <= 0L || duration <= INSTANT_SILENCE_SKIP_STEP_MS) return
 
         isSilenceSkipping = true
         try {
@@ -3766,7 +3770,7 @@ class MusicService :
             val silenceProcessor = playerSilenceProcessors[player] ?: return
             while (coroutineContext.isActive && instantSilenceSkipEnabled.value && silenceProcessor.isCurrentlySilent()) {
                 val current = player.currentPosition
-                val target = (current + INSTANT_SILENCE_SKIP_STEP_MS).coerceAtMost(duration - 500)
+                val target = (current + INSTANT_SILENCE_SKIP_STEP_MS).coerceAtMost(lastSkippablePosition)
 
                 if (target <= current) break
 
