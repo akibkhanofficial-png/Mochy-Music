@@ -84,8 +84,8 @@ data class EqSettings(
 @Serializable
 data class LoudnessSettings(
     val enabled: Boolean = true,
-    val boostDb: Float = 5.5f,
-    val compression: Float = 0.4f,
+    val boostDb: Float = 6.5f,
+    val compression: Float = 0.45f,
 ) {
     fun toParams() = LoudnessParams(enabled, boostDb, compression)
 }
