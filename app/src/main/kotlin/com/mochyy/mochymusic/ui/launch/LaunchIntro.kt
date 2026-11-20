@@ -12,6 +12,8 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -25,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -47,6 +50,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.PathParser
 import com.mochyy.mochymusic.ui.component.BlurEffectCache
@@ -368,6 +373,29 @@ fun LaunchIntroOverlay(state: LaunchIntroState, essentialsReady: Boolean) {
             )
         }
 
+        // Small creator credit beneath the mark; it fades with the launch transition.
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 52.dp)
+                .graphicsLayer { alpha = 1f - smoothstep(0.12f, 0.82f, state.flight.value) },
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "MADE IN INDIA",
+                color = Color(0xFF8DDBD1),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 2.sp,
+            )
+            Text(
+                text = "By Akib Khan",
+                color = Color.White.copy(alpha = 0.68f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+            )
+        }
+
         // the mark, on a layer just big enough for it so the blur stays cheap at every size
         Spacer(
             modifier = Modifier
@@ -453,56 +481,37 @@ private fun Density.placementAt(state: LaunchIntroState, size: IntSize): MarkPla
 
 /** the two marks, in the splash drawable's units, ready to draw at any scale */
 private class LaunchMarkArt {
-    private val triangle = path(
-        "M163.5 96.3493C180.167 105.972 180.167 130.028 163.5 139.651L108 171.694C91.3333 181.316 " +
-            "70.5 169.288 70.5 150.043V85.9569C70.5 66.7119 91.3333 54.6838 108 64.3063L163.5 96.3493Z"
-    )
-    // the face: the little chevron and the smile under it
-    private val face = path("M97 112L108.5 98L120 112M110.325 125C111.871 133.439 121.868 148.704 142.944 149.92")
+    private val note = path("M146 39L174 39L174 135C174 163 152 183 122 183C100 183 85 170 85 150C85 126 106 111 133 111C137 111 141 111 146 114Z")
+    private val mintStem = path("M146 39L174 39L174 63L146 63Z")
     private val mask = Path().apply { addCircle(Pivot.x, Pivot.y, SplashMaskRadius, Path.Direction.CW) }
 
-    // ic_splash_mark: a white shape with a dark outline and a dark face
-    private val fill = paint(android.graphics.Color.WHITE) { style = Paint.Style.FILL }
-    private val darkOutline = paint(0xFF212121.toInt()) {
+    private val fill = paint(0xFFB9A0FF.toInt()) { style = Paint.Style.FILL }
+    private val darkOutline = paint(0xFF171126.toInt()) {
         style = Paint.Style.STROKE
-        strokeWidth = 19f
+        strokeWidth = 10f
         strokeJoin = Paint.Join.ROUND
     }
-    private val darkFace = paint(0xFF212121.toInt()) {
-        style = Paint.Style.STROKE
-        strokeWidth = 11f
-        strokeCap = Paint.Cap.ROUND
-        strokeJoin = Paint.Join.ROUND
-    }
-
-    // ic_mochy_mark: the same outline and face, white, nothing filled
+    private val mint = paint(0xFF8DDBD1.toInt()) { style = Paint.Style.FILL }
     private val lightOutline = paint(android.graphics.Color.WHITE) {
         style = Paint.Style.STROKE
-        strokeWidth = 19f
-        strokeJoin = Paint.Join.ROUND
-    }
-    private val lightFace = paint(android.graphics.Color.WHITE) {
-        style = Paint.Style.STROKE
-        strokeWidth = 11f
-        strokeCap = Paint.Cap.ROUND
+        strokeWidth = 10f
         strokeJoin = Paint.Join.ROUND
     }
 
     fun draw(canvas: android.graphics.Canvas, filledAlpha: Float, outlineAlpha: Float, filledScale: Float = 1f) {
-        // each mark is faded as a whole, so its overlapping strokes never show through each other
         if (filledAlpha > 0.002f) {
             canvas.saveLayerAlpha(LayerBounds, (filledAlpha * 255f).toInt())
             canvas.scale(filledScale, filledScale, Pivot.x, Pivot.y)
             canvas.clipPath(mask)
-            canvas.drawPath(triangle, fill)
-            canvas.drawPath(triangle, darkOutline)
-            canvas.drawPath(face, darkFace)
+            canvas.drawPath(note, fill)
+            canvas.drawPath(note, darkOutline)
+            canvas.drawPath(mintStem, mint)
             canvas.restore()
         }
         if (outlineAlpha > 0.002f) {
             canvas.saveLayerAlpha(ArtBounds, (outlineAlpha * 255f).toInt())
-            canvas.drawPath(triangle, lightOutline)
-            canvas.drawPath(face, lightFace)
+            canvas.drawPath(note, lightOutline)
+            canvas.drawPath(mintStem, mint)
             canvas.restore()
         }
     }
