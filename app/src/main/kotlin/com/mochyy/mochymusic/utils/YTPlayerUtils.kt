@@ -986,13 +986,13 @@ object YTPlayerUtils {
             else -> audioQuality
         }
 
-        // YouTube's audio ladder is roughly: ~50k (itag 139/249), ~70k (250),
-        // ~128k AAC (140), ~160k Opus (251). The MEDIUM ceiling sits just under the
-        // Opus rung so it lands on 128k AAC while HIGH keeps the best stream.
+        // These are requested quality ceilings, not promises from YouTube.
+        // YouTube commonly tops out around 128k AAC / 160k Opus, so 256k and
+        // 320k targets select the best stream the source actually provides.
         val targetBitrateBps = when (effectiveQuality) {
-            AudioQuality.LOW -> 70_000
-            AudioQuality.MEDIUM -> 135_000
-            else -> null // HIGH: take the best available
+            AudioQuality.LOW -> 128_000
+            AudioQuality.MEDIUM -> 256_000
+            else -> 320_000 // HIGH: target 320k, fall back to the best available stream
         }
 
         // YouTube's own AUDIO_QUALITY_* label outranks raw bitrate: a track can carry a
