@@ -23,9 +23,7 @@ enum class AppIconFamily(@StringRes val title: Int) {
     // the art this family wears on a custom colour: the outline goes dark on a pale one, like on white
     @DrawableRes
     fun artOn(color: AppIconColor): Int = when (this) {
-        Mark -> R.drawable.ic_launcher_mark
-        Outline -> if (color.pale) R.drawable.ic_launcher_outline_dark else R.drawable.ic_launcher_monochrome
-        Anime -> R.drawable.ic_launcher_anime
+        Mark, Outline, Anime -> R.drawable.ic_launcher_anime
     }
 }
 
@@ -57,17 +55,17 @@ class AppIcon private constructor(
     val color: AppIconColor? = null,
 ) {
     companion object {
-        val Default = AppIcon("Default", "IconDefault", AppIconFamily.Mark, R.drawable.ic_launcher_mark, R.color.ic_launcher_background, R.string.app_icon_default)
+        val Default = AppIcon("Default", "IconDefault", AppIconFamily.Mark, R.drawable.ic_launcher_anime, R.color.ic_launcher_background, R.string.app_icon_default)
 
         // the ready-made ones, each family's in the order its row shows them
         val presets: List<AppIcon> = listOf(
             Default,
-            AppIcon("MarkWhite", "IconMarkWhite", AppIconFamily.Mark, R.drawable.ic_launcher_mark, R.color.app_icon_white, R.string.app_icon_white),
-            AppIcon("MarkBlack", "IconMarkBlack", AppIconFamily.Mark, R.drawable.ic_launcher_mark, R.color.app_icon_black, R.string.app_icon_black),
-            AppIcon("MarkMaterial", "IconMarkMaterial", AppIconFamily.Mark, R.drawable.ic_launcher_mark, R.color.app_icon_material, R.string.app_icon_material),
+            AppIcon("MarkWhite", "IconMarkWhite", AppIconFamily.Mark, R.drawable.ic_launcher_anime, R.color.app_icon_white, R.string.app_icon_white),
+            AppIcon("MarkBlack", "IconMarkBlack", AppIconFamily.Mark, R.drawable.ic_launcher_anime, R.color.app_icon_black, R.string.app_icon_black),
+            AppIcon("MarkMaterial", "IconMarkMaterial", AppIconFamily.Mark, R.drawable.ic_launcher_anime, R.color.app_icon_material, R.string.app_icon_material),
             AppIcon("MarkTransparent", "IconMarkTransparent", AppIconFamily.Mark, R.drawable.ic_launcher_mark, null, R.string.app_icon_transparent),
-            AppIcon("Outline", "IconOutline", AppIconFamily.Outline, R.drawable.ic_launcher_monochrome, R.color.ic_launcher_background, R.string.app_icon_outline),
-            AppIcon("OutlineWhite", "IconOutlineWhite", AppIconFamily.Outline, R.drawable.ic_launcher_outline_dark, R.color.app_icon_white, R.string.app_icon_outline_white),
+            AppIcon("Outline", "IconOutline", AppIconFamily.Outline, R.drawable.ic_launcher_anime, R.color.ic_launcher_background, R.string.app_icon_outline),
+            AppIcon("OutlineWhite", "IconOutlineWhite", AppIconFamily.Outline, R.drawable.ic_launcher_anime, R.color.app_icon_white, R.string.app_icon_outline_white),
             AppIcon("OutlineBlack", "IconOutlineBlack", AppIconFamily.Outline, R.drawable.ic_launcher_monochrome, R.color.app_icon_black, R.string.app_icon_outline_black),
             AppIcon("OutlineMaterial", "IconOutlineMaterial", AppIconFamily.Outline, R.drawable.ic_launcher_monochrome, R.color.app_icon_material, R.string.app_icon_outline_material),
             AppIcon("OutlineTransparent", "IconOutlineTransparent", AppIconFamily.Outline, R.drawable.ic_launcher_monochrome, null, R.string.app_icon_outline_transparent),
