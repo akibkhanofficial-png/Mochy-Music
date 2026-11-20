@@ -829,6 +829,7 @@ class MusicService :
             audioLab.eightD.collect(::updateEightDReverb)
         }
         observeOutputSettings()
+        dropLocalSongCopies()
         sleepTimer = SleepTimer(scope, player)
         player.addListener(sleepTimer)
 
@@ -1874,8 +1875,16 @@ class MusicService :
 
     private var lastPlaybackError: PlaybackException? = null
 
+    // set when a song on the phone failed for a reason worth saying plainly (the file's gone, its access was lost), for the next failure toast
+    private var localFileProblem: LocalFileProblem? = null
+
     /** The top toast for a stream that couldn't be played, with a plain reason. */
     private fun announceStreamFailure() {
+        localFileProblem?.let { problem ->
+            localFileProblem = null
+            com.mochyy.mochymusic.ui.component.TopToaster.error(getString(problem.message))
+            return
+        }
         val e = lastPlaybackError
         // no decoder for it here, and nowhere else had it: that's the whole reason
         val notice = player.currentMediaItem?.mediaId?.let { decoderNotices.remove(it) }
@@ -3025,6 +3034,19 @@ class MusicService :
         )
     }
 
+    // system equalizers (dolby, the phone's own sound settings) follow one audio session: after a crossfade or mix the song plays from another player, so the new one is announced and the one let go is closed
+    private fun announceEffectSession(sessionId: Int, open: Boolean) {
+        if (!isAudioEffectSessionOpened || sessionId <= 0) return
+        val action = if (open) AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION else AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION
+        sendBroadcast(
+            Intent(action).apply {
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                if (open) putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+            },
+        )
+    }
+
     private var previousMediaItemIndex = C.INDEX_UNSET
 
     override fun onMediaItemTransition(
@@ -3486,6 +3508,13 @@ class MusicService :
             failStream()
             return
         }
+        // a file on the phone that's gone, lost its access or isn't a kind the player reads: clearing the cache and retrying never changed that, so it says why and moves on
+        LocalFileProblem.of(this, player.currentMediaItem, error)?.let { problem ->
+            Timber.tag(TAG).w(error, "Couldn't play ${player.currentMediaItem?.mediaId} from the phone: $problem")
+            localFileProblem = problem
+            failStream()
+            return
+        }
         val mediaId = player.currentMediaItem?.mediaId
         Timber.tag(TAG).w(error, "Player error occurred for $mediaId: errorCode=${error.errorCode}, message=${error.message}, causes=${generateSequence<Throwable>(error) { it.cause }.joinToString(" <- ") { it.javaClass.simpleName + ":" + it.message }}")
         reportException(error)
@@ -3583,6 +3612,14 @@ class MusicService :
     private fun isContainerParseError(error: PlaybackException) =
         error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED ||
             error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED
+
+    // imported files used to be copied into the song cache as they played; they're read straight from the phone now, so the old copies only take up room
+    private fun dropLocalSongCopies() {
+        scope.launch(Dispatchers.IO) {
+            playerCache.keys.filter { it.startsWith("LOCAL_") }
+                .forEach { key -> runCatching { playerCache.removeResource(key) } }
+        }
+    }
 
     /** Every source module's cached copy of [mediaId], which lives under its own key. */
     private fun dropModuleCache(mediaId: String) {
@@ -4026,7 +4063,9 @@ class MusicService :
     fun shareDataSourceFactory(): DataSource.Factory = createDataSourceFactory()
 
     private fun createDataSourceFactory(): DataSource.Factory {
-        return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
+        // songs already on the phone are read straight from their file; only what comes over the network goes through the caches
+        val upstream = LocalBypassDataSource.Factory(DefaultDataSource.Factory(this), createCacheDataSource())
+        return ResolvingDataSource.Factory(upstream) { dataSpec ->
             // a stream a source module or backend resolved to a real URL (an HLS playlist, given
             // as a data: URI when the module rewrote it, and its segments) carries no media id:
             // it's fetched as it is
@@ -5001,6 +5040,7 @@ class MusicService :
         player = nextPlayer
         _playerFlow.value = player
         secondaryPlayer = null
+        announceEffectSession(nextPlayer.audioSessionId, open = true)
 
         fadingPlayer?.removeListener(this)
         fadingPlayer?.removeListener(sleepTimer)
@@ -5145,6 +5185,7 @@ class MusicService :
     }
 
     private fun cleanupCrossfade() {
+        fadingPlayer?.let { runCatching { announceEffectSession(it.audioSessionId, open = false) } }
         fadingPlayer?.stop()
         fadingPlayer?.clearMediaItems()
         fadingPlayer?.release()
@@ -5502,6 +5543,7 @@ class MusicService :
             // set when it was made, seconds ago: a mute, an unmute or a slider move since then
             // never reached it, and the song carried on at the old volume (0, if it was muted)
             incoming.volume = targetVolume()
+            announceEffectSession(incoming.audioSessionId, open = true)
 
             outgoing.removeListener(this@MusicService)
             outgoing.removeListener(sleepTimer)
@@ -5547,6 +5589,7 @@ class MusicService :
         }
 
         override fun release(outgoing: ExoPlayer) {
+            runCatching { announceEffectSession(outgoing.audioSessionId, open = false) }
             runCatching {
                 outgoing.stop()
                 outgoing.clearMediaItems()

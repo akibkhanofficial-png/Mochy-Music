@@ -21,7 +21,7 @@
     <string name="modules_looks">Look modules</string>
     <string name="modules_looks_empty">Nothing here yet, add one</string>
     <string name="modules_sources">JS &amp; source modules</string>
-    <string name="modules_swipe_to_delete">Swipe to delete, drag the lines to reorder</string>
+    <string name="modules_swipe_to_delete">Swipe to delete, hold a module to reorder</string>
     <string name="modules_add_more">Add a module</string>
     <string name="module_version">v%1$s</string>
     <string name="module_remove_short">Remove</string>
@@ -201,4 +201,8 @@
     <string name="module_page_use_player">Use this player</string>
     <string name="module_page_more_songs">Show more</string>
     <string name="module_page_no_player">Turn this module on to see its player here.</string>
+    <!-- a module player's bottom bar -->
+    <string name="skin_bar_up_next">Up next</string>
+    <string name="skin_bar_nothing_next">Nothing queued yet</string>
+    <string name="skin_bar_no_lyrics">No lyrics for this song</string>
 </resources>

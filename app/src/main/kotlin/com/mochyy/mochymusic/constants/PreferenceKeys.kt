@@ -397,6 +397,11 @@ val ScrobbleDelayPercentKey = floatPreferencesKey("scrobbleDelayPercent")
 val ScrobbleMinSongDurationKey = intPreferencesKey("scrobbleMinSongDuration")
 val ScrobbleDelaySecondsKey = intPreferencesKey("scrobbleDelaySeconds")
 
+// cloud backup: only the schedule lives here, the account itself sits in no_backup so it never travels in a zip
+val CloudBackupAutoKey = booleanPreferencesKey("cloudBackupAuto")
+val CloudBackupEveryMinutesKey = intPreferencesKey("cloudBackupEveryMinutes")
+val CloudBackupKeepKey = intPreferencesKey("cloudBackupKeep")
+
 val ChipSortTypeKey = stringPreferencesKey("chipSortType")
 val SongSortTypeKey = stringPreferencesKey("songSortType")
 val SongSortDescendingKey = booleanPreferencesKey("songSortDescending")
@@ -926,6 +931,8 @@ val LyricsClickKey = booleanPreferencesKey("lyricsClick")
 val LyricsWaveAnimationKey = booleanPreferencesKey("lyricsWaveAnimation")
 
 val LyricsHighBloomKey = booleanPreferencesKey("lyricsHighBloom")
+// resting lyric lines soft-lit onto the cover background instead of plain grey, on until turned off
+val LyricsSoftLightKey = booleanPreferencesKey("lyricsSoftLight")
 val LyricsScrollKey = booleanPreferencesKey("lyricsScrollKey")
 val LyricsRomanizeJapaneseKey = booleanPreferencesKey("lyricsRomanizeJapanese")
 val LyricsRomanizeKoreanKey = booleanPreferencesKey("lyricsRomanizeKorean")
