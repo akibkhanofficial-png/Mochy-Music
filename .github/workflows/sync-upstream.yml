@@ -1,0 +1,27 @@
+name: Sync upstream without dropping Melody Sterm changes
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Melody Sterm branch
+        uses: actions/checkout@v4
+        with:
+          ref: custom-sound-tuning
+          fetch-depth: 0
+      - name: Merge latest upstream changes
+        run: |
+          git remote add upstream https://github.com/realidkroo/Mochy-Music.git
+          git fetch upstream main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge --no-edit upstream/main
+          git push origin HEAD:custom-sound-tuning
