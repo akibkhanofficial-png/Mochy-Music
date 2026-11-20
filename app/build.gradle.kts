@@ -183,7 +183,6 @@ extensions.configure<ApplicationExtension> {
             }
         }
         debug {
-            resValue("string", "app_name", "Melody Sterm")
             applicationIdSuffix = ".debug"
             isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
