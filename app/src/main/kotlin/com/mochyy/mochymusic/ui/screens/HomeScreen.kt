@@ -116,6 +116,7 @@ import com.music.innertube.models.YTItem
 import com.mochyy.mochymusic.constants.HomeStyle
 import com.mochyy.mochymusic.constants.HomeStyleKey
 import com.mochyy.mochymusic.constants.ProfilePicUriKey
+import com.mochyy.mochymusic.constants.UsernameKey
 import com.mochyy.mochymusic.constants.ThumbnailCornerRadius
 import com.mochyy.mochymusic.db.entities.Album
 import com.mochyy.mochymusic.db.entities.Artist
@@ -493,6 +494,7 @@ private val HomeTopBarRise = 16.dp
  */
 @Composable
 private fun HomeShell() {
+    val (welcomeName) = rememberPreference(UsernameKey, "")
     val homeStyle by rememberEnumPreference(HomeStyleKey, defaultValue = HomeStyle.MOCHYY)
     val profilePicUri by rememberPreference(ProfilePicUriKey, "")
     val profileImageUrl = profilePicUri
@@ -501,6 +503,7 @@ private fun HomeShell() {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
+            HomeWelcomeHeader(profileName = welcomeName)
             if (homeStyle == HomeStyle.MOCHYY) {
                 HeroCarouselBones(modifier = Modifier.launchRise(order = 1))
             } else {
@@ -573,6 +576,46 @@ private fun HomeShell() {
                 }
             }
         }
+    }
+}
+
+/** The small personalized welcome at the top of Melody Sterm's Home feed. */
+@Composable
+private fun HomeWelcomeHeader(profileName: String) {
+    val hour = java.time.LocalTime.now().hour
+    val greeting = when (hour) {
+        in 5..11 -> "Good Morning ☀️"
+        in 12..16 -> "Good Afternoon ☀️"
+        else -> "Good Evening 🌙"
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = HomeContentInset)
+            .padding(
+                top = WindowInsets.stableSystemBars.asPaddingValues().calculateTopPadding() + 76.dp,
+                bottom = 24.dp
+            ),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(
+            text = "Melody Sterm",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.secondary,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = greeting,
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = profileName.ifBlank { "Music Lover" },
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
@@ -736,6 +779,7 @@ fun HomeScreen(
             .take(6)
     }
 
+    val (welcomeName) = rememberPreference(UsernameKey, "")
     val accountName by viewModel.accountName.collectAsState()
     val accountImageUrl by viewModel.accountImageUrl.collectAsState()
     val profilePicUri by rememberPreference(ProfilePicUriKey, "")
@@ -1344,6 +1388,9 @@ fun HomeScreen(
                             bottom = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
                         )
                     ) {
+                item(key = "melody_welcome", contentType = "welcome") {
+                    HomeWelcomeHeader(profileName = welcomeName)
+                }
                 when (homeStyle) {
                     HomeStyle.MOCHYY -> {
                         item(key = "hero", contentType = "hero") {
