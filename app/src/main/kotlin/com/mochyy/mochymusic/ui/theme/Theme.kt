@@ -49,21 +49,21 @@ fun MochyTheme(
 
         if (darkTheme) {
             darkColorScheme(
-                primary = Color(0xFFE0E0E0),
-                onPrimary = Color.Black,
-                primaryContainer = Color(0xFF333333),
-                onPrimaryContainer = Color.White,
-                secondary = Color(0xFFB0B0B0),
-                onSecondary = Color.Black,
-                secondaryContainer = Color(0xFF2C2C2C),
-                onSecondaryContainer = Color.White,
-                background = Color.Black,
-                onBackground = Color.White,
-                surface = Color.Black,
-                onSurface = Color.White,
-                surfaceVariant = Color(0xFF1A1A1A),
-                onSurfaceVariant = Color.White,
-                surfaceTint = Color.Black
+                primary = Color(0xFFB9A0FF),
+                onPrimary = Color(0xFF21163D),
+                primaryContainer = Color(0xFF39285E),
+                onPrimaryContainer = Color(0xFFE8DEFF),
+                secondary = Color(0xFF8DDBD1),
+                onSecondary = Color(0xFF102D2A),
+                secondaryContainer = Color(0xFF214541),
+                onSecondaryContainer = Color(0xFFC5F5EE),
+                background = Color(0xFF09090D),
+                onBackground = Color(0xFFF4F0FA),
+                surface = Color(0xFF101016),
+                onSurface = Color(0xFFF4F0FA),
+                surfaceVariant = Color(0xFF1D1B27),
+                onSurfaceVariant = Color(0xFFD1CADF),
+                surfaceTint = Color(0xFF09090D)
             )
         } else {
             lightColorScheme(
