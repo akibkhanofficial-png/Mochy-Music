@@ -51,10 +51,11 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleUniversalGmsRelease --no-configuration-cache --console=plain --warning-mode summary
 
-      - name: Attach APK to the published GitHub Release
+      - name: Attach APK with the exact filename required by the in-app updater
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           APK=$(find app/build/outputs/apk/universalGms/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
           test -n "$APK" || { echo "Universal GMS release APK was not produced"; exit 1; }
-          gh release upload "${{ github.event.release.tag_name }}" "$APK#melody-sterm.apk" --clobber
+          cp "$APK" melody-sterm.apk
+          gh release upload "${{ github.event.release.tag_name }}" melody-sterm.apk --clobber
