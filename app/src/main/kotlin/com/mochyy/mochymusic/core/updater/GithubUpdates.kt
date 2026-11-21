@@ -217,6 +217,10 @@ private suspend fun fetchReleases(): Result<List<ParsedRelease>> = withContext(D
                     else -> fallbackSize
                 }
 
+                // A GitHub release is published before its APK workflow finishes uploading.
+                // Do not cache or expose that temporary, incomplete release to the in-app updater.
+                if (apkUrl.isNullOrBlank() || apkName.isNullOrBlank() || apkSize <= 0L) continue
+
                 add(
                     ParsedRelease(
                         version = fullVer,
