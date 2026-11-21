@@ -50,10 +50,15 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Restore stable signing key
+        id: keystore-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: melody-sterm-debug-keystore-v1
 
-      - name: Generate debug.keystore
+      - name: Generate signing key on first run only
+        if: steps.keystore-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/.android
           keytool -genkey -v \
@@ -65,6 +70,9 @@ jobs:
             -keysize 2048 \
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Build Debug APK
         env:
