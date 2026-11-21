@@ -106,7 +106,9 @@ import com.mochyy.mochymusic.ui.component.RemoteFocus
 fun rememberUpdateState(): androidx.compose.runtime.State<UpdateState> {
     val context = LocalContext.current
     val state = remember { mutableStateOf<UpdateState>(UpdateState.Checking) }
-    LaunchedEffect(Unit) { state.value = checkUpdate(updateChannel(context), force = false) }
+    // Releases are published before the APK build workflow attaches the asset.
+    // Force a fresh request when opening the sheet so an earlier incomplete response is not reused.
+    LaunchedEffect(Unit) { state.value = checkUpdate(updateChannel(context), force = true) }
     return state
 }
 
