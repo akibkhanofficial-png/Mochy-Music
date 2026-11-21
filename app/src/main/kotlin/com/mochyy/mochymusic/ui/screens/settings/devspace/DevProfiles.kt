@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -47,6 +48,7 @@ import coil3.request.ImageRequest
 import coil3.request.transformations
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.ui.component.pressBounce
+import com.mochyy.mochymusic.ui.screens.settings.devspace.openDevUrl
 import com.mochyy.mochymusic.ui.utils.SoftBlurTransformation
 import com.mochyy.mochymusic.ui.component.RemoteFocus
 import com.mochyy.mochymusic.ui.component.rememberResourcePainter
@@ -55,13 +57,17 @@ internal data class DevPerson(
     val name: String,
     val bio: String,
     @DrawableRes val avatar: Int,
+    val socials: List<DevSocial> = emptyList(),
 )
+
+internal data class DevSocial(val label: String, val url: String)
 
 internal val DevPeople = listOf(
     DevPerson(
-        name = "idkroo",
-        bio = "ui ux guy here uhh idk what to write here, pls star the repo",
+        name = "Melody Sterm",
+        bio = "Made in India • By Akib Khan",
         avatar = R.drawable.frame_51_3,
+        socials = listOf(DevSocial("Instagram", "https://www.instagram.com/mr_aakibkhann/")),
     ),
     DevPerson(
         name = "Keycii",
@@ -121,6 +127,19 @@ internal fun DevProfilePage(
                     modifier = Modifier.padding(vertical = 22.dp),
                 )
                 Rule()
+            }
+            if (person.socials.isNotEmpty()) {
+                val context = LocalContext.current
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.rise(2).padding(top = 22.dp),
+                ) {
+                    Text("Instagram", style = devText(13f, FontWeight.SemiBold, DevLinkText, -0.3f))
+                    person.socials.forEach { social ->
+                        DevLinkRow(social.label) { context.openDevUrl(social.url) }
+                    }
+                    Rule(Modifier.padding(top = 12.dp))
+                }
             }
 
             Column(
