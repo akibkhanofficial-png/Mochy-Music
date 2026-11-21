@@ -75,7 +75,7 @@ class LoudnessAudioProcessor(private val service: AudioFxService) : AudioProcess
         val slope = 1f - 1f / (1f + 3f * compression)
         // makeup brings back half of what a full-scale signal would lose, so it sounds louder, not flatter
         val makeup = -threshold * slope * 0.5f * (if (compression > 0f) 1f else 0f)
-        val boost = params.boostDb.coerceIn(0f, 12f)
+        val boost = (params.boostDb + ExtraOutputBoostDb).coerceIn(0f, 12f)
         val toggleStep = 1f / (sampleRate * ToggleSeconds)
 
         val frames = bytes / (2 * channels)
@@ -157,7 +157,7 @@ class LoudnessAudioProcessor(private val service: AudioFxService) : AudioProcess
         amount = if (params.enabled) 1f else 0f
         envelope = 0f
         limiterGain = 1f
-        gain = 10f.pow(params.boostDb.coerceIn(0f, 12f) / 20f)
+        gain = 10f.pow((params.boostDb + ExtraOutputBoostDb).coerceIn(0f, 12f) / 20f)
     }
 
     override fun reset() {
@@ -171,6 +171,8 @@ class LoudnessAudioProcessor(private val service: AudioFxService) : AudioProcess
         private val EMPTY_BUFFER: ByteBuffer = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
         private const val Block = 32
         private const val ToggleSeconds = 0.15f
+        // About 7% more output amplitude (~0.59 dB), still protected by the peak limiter.
+        private const val ExtraOutputBoostDb = 0.59f
         private const val Ceiling = 0.944f
         private const val Knee = 0.95f
 
