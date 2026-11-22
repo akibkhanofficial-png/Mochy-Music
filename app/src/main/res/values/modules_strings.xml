@@ -254,42 +254,4 @@
     <string name="skin_bar_no_lyrics">No lyrics for this song</string>
 
     <!-- Upstream 8.4.4 additions -->
-<string name="module_browser_open">OPEN</string>
-<string name="module_browser_view">VIEW</string>
-<string name="module_store_best">Best from community</string>
-<string name="module_store_categories">Categories</string>
-<string name="module_store_close_search">Close search</string>
-<string name="module_browser_get">Get</string>
-<string name="settings_module_store">Module Store</string>
-<string name="module_store_welcome_title">Welcome to Module Store!</string>
-<string name="module_store_welcome_body">Hello %1$s, welcome! We want to make Mochy better and easier to use, so we made a place to find modules from the community. There\'s one catch: you\'ll need to be in our Discord to use it. Before you go on, have a read of the terms below, including what we take from your Discord account.</string>
-<string name="module_store_welcome_there">there</string>
-<string name="module_store_terms_intro">By using the Module Store, you agree to the following.</string>
-<string name="module_store_next">Next</string>
-<string name="module_store_read_first">Read to the end to continue</string>
-<string name="module_store_fork_title">You\'re using a fork</string>
-<string name="module_store_fork_body">This copy of Mochy isn\'t an official build, so the Module Store turned it away.</string>
-<string name="module_store_fork_users_title">What this means for you</string>
-<string name="module_store_fork_users">You can\'t open the Module Store in this copy. Everything else works, including modules you add yourself. To use the store, get Mochy from its official releases.</string>
-<string name="module_store_fork_devs_title">Building your own Mochy?</string>
-<string name="module_store_fork_devs">The store only answers official builds, which carry a key that isn\'t in the public code. To take it out of your fork, set FeedUrl to an empty string in modules/browser/ModuleFeed.kt: the Module Store card leaves Settings and the store switches itself off.</string>
-<string name="module_store_fork_get">Get official Mochy</string>
-<string name="experimental_simulate_fork_title">Pretend to be a fork</string>
-<string name="experimental_simulate_fork_desc">The Module Store treats this phone like a fork, so you can see the page a fork gets. Turn it off to go back to the store.</string>
-<string name="module_store_update_title">There\'s an update</string>
-<string name="module_store_update_versions">%1$s → %2$s</string>
-<string name="module_store_update_newer">A newer version was posted since you added it.</string>
-<string name="module_store_about">About this module</string>
-<string name="module_store_no_about">Its maker hasn\'t written anything about it yet.</string>
-<string name="module_store_updated">Date updated</string>
-<string name="module_store_install_zip">.Zip</string>
-<string name="module_store_install_link">Link</string>
-<string name="module_store_install_web">Web</string>
-<string name="module_store_install_pack">Pack</string>
-<string name="module_store_pack_title">In this pack</string>
-<string name="module_store_pack_link">Added from its link</string>
-<string name="module_store_previews">Preview</string>
-<string name="module_store_preview">A preview of %1$s</string>
-<string name="module_store_open_post">Open its post on Discord</string>
-<string name="module_store_gone">This module isn\'t in the store any more.</string>
 </resources>
