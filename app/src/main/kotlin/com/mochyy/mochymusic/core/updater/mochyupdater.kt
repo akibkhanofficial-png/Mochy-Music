@@ -324,7 +324,7 @@ fun UpdateScreen(navController: NavHostController) {
                                                 ContextCompat.startActivity(context, installIntent, null)
                                             }
                                         } else {
-                                            val urlToDownload = currentStatus.apkUrl ?: "https://github.com/akibkhanofficial-png/Mochy-Music/releases/download/${currentStatus.version}/mochy.apk"
+                                            val urlToDownload = currentStatus.apkUrl ?: "https://github.com/akibkhanofficial-png/Mochy-Music/releases/download/${currentStatus.version}/melody-sterm.apk"
                                             val downloadRequest = OneTimeWorkRequestBuilder<UpdateDownloadWorker>()
                                                 .setInputData(workDataOf("apk_url" to urlToDownload, "version" to currentStatus.version, "file_size" to currentStatus.size))
                                                 .addTag("update_download")
