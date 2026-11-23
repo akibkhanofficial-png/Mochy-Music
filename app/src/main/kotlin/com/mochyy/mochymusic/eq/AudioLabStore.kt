@@ -70,14 +70,14 @@ data class EqPreset(
 
 @Serializable
 data class EqSettings(
-    val enabled: Boolean = false,
-    /** the user's own curve: the graph's nodes and the bands' sliders are the same list */
-    val nodes: List<ParametricEQBand> = EqPresets.flatNodes(),
+    val enabled: Boolean = true,
+    /** Mochy Punch: punchy low end with a little presence lift, while retaining vocal clarity. */
+    val nodes: List<ParametricEQBand> = EqPresets.BuiltIn.first { it.id == "punchy_balanced" }.nodes,
     val preamp: Double = 0.0,
     /** pulls the level down by the part of the boost the limiter can't catch, so nothing clips */
     val autoPreamp: Boolean = true,
     /** the preset the curve still matches; null once it's been edited */
-    val presetId: String? = EqPresets.FlatId,
+    val presetId: String? = "punchy_balanced",
     val correction: AutoEqCorrection? = null,
     val correctionEnabled: Boolean = true,
 )
@@ -233,6 +233,7 @@ class AudioLabStore @Inject constructor(
 
     init {
         migrateLegacyEqualizer()
+        migratePunchDefault()
         pushEq()
         pushFx()
     }
@@ -507,6 +508,22 @@ class AudioLabStore @Inject constructor(
         runCatching { json.decodeFromString<T>(it) }
             .onFailure { e -> Timber.tag("AudioLab").w(e, "Couldn't read saved $key") }
             .getOrNull()
+    }
+
+    /** Move an untouched flat default to Mochy Punch once; preserve any user-tuned EQ. */
+    private fun migratePunchDefault() {
+        if (prefs.getBoolean("migrated_mochy_punch_default", false)) return
+        val current = _eq.value
+        if (current.presetId == EqPresets.FlatId &&
+            current.nodes == EqPresets.flatNodes() &&
+            current.preamp == 0.0
+        ) {
+            val punch = EqPresets.BuiltIn.first { it.id == "punchy_balanced" }
+            _eq.value = current.copy(enabled = true, nodes = punch.nodes, presetId = punch.id)
+        }
+        prefs.edit { putBoolean("migrated_mochy_punch_default", true) }
+        pushEq()
+        scheduleSave()
     }
 
     /** brings over the old 10-band screen's curve and any profiles saved with it, once */
