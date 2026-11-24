@@ -234,6 +234,7 @@ class AudioLabStore @Inject constructor(
     init {
         migrateLegacyEqualizer()
         migratePunchDefault()
+        migrateLoudnessDefault()
         pushEq()
         pushFx()
     }
@@ -508,6 +509,16 @@ class AudioLabStore @Inject constructor(
         runCatching { json.decodeFromString<T>(it) }
             .onFailure { e -> Timber.tag("AudioLab").w(e, "Couldn't read saved $key") }
             .getOrNull()
+    }
+
+    /** Upgrade only the untouched legacy loudness defaults; keep any user-tuned choice intact. */
+    private fun migrateLoudnessDefault() {
+        if (prefs.getBoolean("migrated_mochy_punch_loudness", false)) return
+        val current = _loudness.value
+        if (!current.enabled && current.boostDb == 4f && current.compression == 0.3f) {
+            _loudness.value = current.copy(enabled = true, boostDb = 6.5f, compression = 0.45f)
+        }
+        prefs.edit { putBoolean("migrated_mochy_punch_loudness", true) }
     }
 
     /** Move an untouched flat default to Mochy Punch once; preserve any user-tuned EQ. */
