@@ -240,6 +240,11 @@ private val Licenses =
 private val ExtraContributors =
     listOf(
         ContributorEntry(
+            login = "Akib Khan",
+            avatarUrl = githubAvatarUrl("akibkhanofficial-png"),
+            profileUrl = "https://github.com/akibkhanofficial-png",
+        ),
+        ContributorEntry(
             login = "swtstvn",
             avatarUrl = githubAvatarUrl("swtstvn"),
             profileUrl = "https://github.com/swtstvn",
@@ -288,6 +293,7 @@ private suspend fun fetchContributors(): List<ContributorEntry> {
                         if (type.equals("Bot", ignoreCase = true)) continue
                         val login = obj.optString("login").takeIf { it.isNotBlank() } ?: continue
                         if (login.endsWith("[bot]", ignoreCase = true)) continue
+                        if (login.equals("akibkhanofficial-png", ignoreCase = true)) continue
                         val avatar = obj.optString("avatar_url").ifBlank { githubAvatarUrl(login) }
                         val html = obj.optString("html_url").ifBlank { "https://github.com/$login" }
                         add(ContributorEntry(login = login, avatarUrl = avatar, profileUrl = html))
