@@ -88,7 +88,7 @@ object YTPlayerUtils {
 
     // who finds a song's stream: innertubex with the client walk below as its backup, or the walk alone; App keeps it in step with the setting
     @Volatile
-    var backend: StreamBackend = StreamBackend.INNERTUBEX
+    var backend: StreamBackend = StreamBackend.CLASSIC
 
     private val innerTubeX = InnerTubeXStreams(httpClient) { videoId, sessionId -> poTokenGenerator.poTokenFor(videoId, sessionId) }
 
